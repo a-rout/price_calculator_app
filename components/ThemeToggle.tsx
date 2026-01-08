@@ -1,75 +1,111 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Animated, Platform } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+  withTiming,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { Sun, Moon } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useHaptics } from '@/hooks/useHaptics';
 
-export function ThemeToggle() {
+/**
+ * Animated theme toggle button with haptic feedback
+ */
+export const ThemeToggle = () => {
   const { theme, toggleTheme, isDark } = useTheme();
-  const animatedValue = React.useRef(new Animated.Value(isDark ? 1 : 0)).current;
+  const { impact } = useHaptics();
+  const rotation = useSharedValue(0);
+  const scale = useSharedValue(1);
 
-  React.useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: isDark ? 1 : 0,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, [isDark, animatedValue]);
+  const handleToggle = async () => {
+    // Trigger haptic feedback
+    await impact('light');
 
-  const backgroundColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [theme.colors.surfaceVariant, theme.colors.primary],
+    // Animate rotation and scale
+    rotation.value = withSequence(
+      withSpring(rotation.value + 180, { damping: 12, stiffness: 100 })
+    );
+    scale.value = withSequence(
+      withTiming(0.8, { duration: 100 }),
+      withSpring(1, { damping: 10, stiffness: 200 })
+    );
+
+    toggleTheme();
+  };
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { rotate: `${rotation.value}deg` },
+        { scale: scale.value },
+      ],
+    };
   });
 
-  const translateX = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [2, 22],
+  const iconOpacity = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      rotation.value % 360,
+      [0, 180],
+      [1, 1],
+      Extrapolation.CLAMP
+    );
+    return { opacity };
   });
-
-  const styles = createStyles(theme);
 
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: theme.colors.border }]}
-      onPress={toggleTheme}
+      onPress={handleToggle}
       activeOpacity={0.8}
+      style={styles.container}
     >
-      <Animated.View
-        style={[
-          styles.toggle,
-          {
-            backgroundColor,
-            transform: [{ translateX }],
-          },
-        ]}
-      >
-        {isDark ? (
-          <Moon size={14} color={theme.colors.onPrimary} strokeWidth={2} />
-        ) : (
-          <Sun size={14} color={theme.colors.text} strokeWidth={2} />
-        )}
+      <Animated.View style={[styles.button, animatedStyle]}>
+        <LinearGradient
+          colors={isDark
+            ? ['#1E293B', '#334155']
+            : ['#FEF3C7', '#FDE68A']
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        >
+          <Animated.View style={iconOpacity}>
+            {isDark ? (
+              <Moon size={20} color="#818CF8" strokeWidth={2} />
+            ) : (
+              <Sun size={20} color="#F59E0B" strokeWidth={2} />
+            )}
+          </Animated.View>
+        </LinearGradient>
       </Animated.View>
     </TouchableOpacity>
   );
-}
+};
 
-const createStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    width: 44,
-    height: 24,
-    borderRadius: 12,
-    padding: 2,
-    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  toggle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  button: {
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  gradient: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
   },
 });
+
+export default ThemeToggle;

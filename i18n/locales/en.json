@@ -1,0 +1,103 @@
+{
+    "common": {
+        "appName": "Calculator",
+        "loading": "Saving...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "add": "Add",
+        "search": "Search",
+        "noResults": "No results found",
+        "error": "Something went wrong",
+        "success": "Done!",
+        "confirm": "Confirm",
+        "back": "Back",
+        "done": "Done",
+        "ok": "OK"
+    },
+    "tabs": {
+        "calculator": "Calculator",
+        "items": "My Items"
+    },
+    "calculator": {
+        "title": "Calculator",
+        "selectItem": "Select Item",
+        "tapToSelect": "Tap to select an item",
+        "searchItems": "Search items...",
+        "noItemsFound": "No items found for \"{{query}}\"",
+        "favorites": "Favorites",
+        "recentlyUsed": "Recently Used",
+        "recentCalculations": "Recent Calculations",
+        "item": "ITEM",
+        "mode": {
+            "calculateCost": "Cost",
+            "calculateQuantity": "Quantity"
+        },
+        "input": {
+            "weightPlaceholder": "Enter weight",
+            "pricePlaceholder": "Enter amount",
+            "kg": "kg",
+            "rupees": "₹"
+        },
+        "result": {
+            "totalCost": "TOTAL COST",
+            "totalQuantity": "TOTAL QUANTITY",
+            "placeholder": "-"
+        },
+        "actions": {
+            "saveCalculation": "SAVE",
+            "clearHistory": "Clear History"
+        },
+        "empty": {
+            "title": "No Items Available",
+            "description": "Add your products in the Items tab to start calculating prices."
+        }
+    },
+    "items": {
+        "title": "Manage Items",
+        "subtitle": "Add products with their prices per kg",
+        "addItem": "Add New Item",
+        "editItem": "Edit Item",
+        "form": {
+            "itemName": "Product Name",
+            "itemNamePlaceholder": "e.g., Rice, Sugar, Onions",
+            "pricePerKg": "Price per KG (₹)",
+            "pricePlaceholder": "0.00",
+            "category": "Category",
+            "saveItem": "Save Item",
+            "updateItem": "Update Item"
+        },
+        "validation": {
+            "nameRequired": "Please enter a product name",
+            "priceRequired": "Please enter a price",
+            "invalidPrice": "Please enter a valid number",
+            "pricePositive": "Price must be greater than 0"
+        },
+        "delete": {
+            "title": "Delete Item",
+            "message": "Are you sure you want to delete \"{{name}}\"?",
+            "undoMessage": "\"{{name}}\" deleted"
+        },
+        "empty": {
+            "title": "No Items Yet",
+            "description": "Add your first product to start using the calculator."
+        }
+    },
+    "categories": {
+        "groceries": "Groceries",
+        "vegetables": "Vegetables",
+        "fruits": "Fruits",
+        "dairy": "Dairy",
+        "meat": "Meat",
+        "spices": "Spices",
+        "beverages": "Beverages",
+        "other": "Other"
+    },
+    "settings": {
+        "language": "Language",
+        "theme": "Theme",
+        "darkMode": "Dark Mode",
+        "lightMode": "Light Mode"
+    }
+}

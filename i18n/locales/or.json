@@ -1,0 +1,103 @@
+{
+    "common": {
+        "appName": "କ୍ୟାଲକୁଲେଟର",
+        "loading": "ସେଭ୍ ହେଉଛି...",
+        "save": "ସେଭ୍ କରନ୍ତୁ",
+        "cancel": "ବାତିଲ",
+        "delete": "ଡିଲିଟ୍ କରନ୍ତୁ",
+        "edit": "ଏଡିଟ୍ କରନ୍ତୁ",
+        "add": "ଯୋଡନ୍ତୁ",
+        "search": "ସନ୍ଧାନ",
+        "noResults": "କିଛି ମିଳିଲା ନାହିଁ",
+        "error": "କିଛି ଭୁଲ ହୋଇଗଲା",
+        "success": "ହୋଇଗଲା!",
+        "confirm": "ନିଶ୍ଚିତ",
+        "back": "ପଛକୁ",
+        "done": "ସମ୍ପୂର୍ଣ୍ଣ",
+        "ok": "ଠିକ ଅଛି"
+    },
+    "tabs": {
+        "calculator": "କ୍ୟାଲକୁଲେଟର",
+        "items": "ମୋ ଜିନିଷ"
+    },
+    "calculator": {
+        "title": "କ୍ୟାଲକୁଲେଟର",
+        "selectItem": "ଜିନିଷ ଚୟନ",
+        "tapToSelect": "ଜିନିଷ ଚୟନ ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ",
+        "searchItems": "ଜିନିଷ ଖୋଜନ୍ତୁ...",
+        "noItemsFound": "\"{{query}}\" ପାଇଁ କିଛି ମିଳିଲା ନାହିଁ",
+        "favorites": "ପ୍ରିୟ",
+        "recentlyUsed": "ସମ୍ପ୍ରତି ବ୍ୟବହୃତ",
+        "recentCalculations": "ସମ୍ପ୍ରତି ହିସାବ",
+        "item": "ଜିନିଷ",
+        "mode": {
+            "calculateCost": "ମୂଲ୍ୟ",
+            "calculateQuantity": "ପରିମାଣ"
+        },
+        "input": {
+            "weightPlaceholder": "ଓଜନ ଲେଖନ୍ତୁ",
+            "pricePlaceholder": "ଟଙ୍କା ଲେଖନ୍ତୁ",
+            "kg": "କେଜି",
+            "rupees": "₹"
+        },
+        "result": {
+            "totalCost": "ମୋଟ ମୂଲ୍ୟ",
+            "totalQuantity": "ମୋଟ ପରିମାଣ",
+            "placeholder": "-"
+        },
+        "actions": {
+            "saveCalculation": "ସେଭ୍",
+            "clearHistory": "ଇତିହାସ ସଫା"
+        },
+        "empty": {
+            "title": "କୌଣସି ଜିନିଷ ନାହିଁ",
+            "description": "ମୂଲ୍ୟ ହିସାବ କରିବା ପାଇଁ ଜିନିଷ ଟ୍ୟାବ୍ ରେ ଆପଣଙ୍କ ଉତ୍ପାଦ ଯୋଡନ୍ତୁ।"
+        }
+    },
+    "items": {
+        "title": "ଜିନିଷ ପରିଚାଳନା",
+        "subtitle": "ପ୍ରତି କେଜି ମୂଲ୍ୟ ସହ ଉତ୍ପାଦ ଯୋଡନ୍ତୁ",
+        "addItem": "ନୂଆ ଜିନିଷ ଯୋଡନ୍ତୁ",
+        "editItem": "ଜିନିଷ ଏଡିଟ୍ କରନ୍ତୁ",
+        "form": {
+            "itemName": "ଉତ୍ପାଦ ନାମ",
+            "itemNamePlaceholder": "ଯେପରି: ଚାଉଳ, ଚିନି, ପିଆଜ",
+            "pricePerKg": "ପ୍ରତି କେଜି ମୂଲ୍ୟ (₹)",
+            "pricePlaceholder": "0.00",
+            "category": "ବର୍ଗ",
+            "saveItem": "ଜିନିଷ ସେଭ୍ କରନ୍ତୁ",
+            "updateItem": "ଜିନିଷ ଅପଡେଟ୍ କରନ୍ତୁ"
+        },
+        "validation": {
+            "nameRequired": "ଦୟାକରି ଉତ୍ପାଦ ନାମ ଲେଖନ୍ତୁ",
+            "priceRequired": "ଦୟାକରି ମୂଲ୍ୟ ଲେଖନ୍ତୁ",
+            "invalidPrice": "ଦୟାକରି ଏକ ସଠିକ ସଂଖ୍ୟା ଲେଖନ୍ତୁ",
+            "pricePositive": "ମୂଲ୍ୟ 0 ରୁ ଅଧିକ ହେବା ଦରକାର"
+        },
+        "delete": {
+            "title": "ଜିନିଷ ଡିଲିଟ୍ କରନ୍ତୁ",
+            "message": "ଆପଣ ନିଶ୍ଚିତ ଭାବେ \"{{name}}\" ଡିଲିଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+            "undoMessage": "\"{{name}}\" ଡିଲିଟ୍ ହୋଇଗଲା"
+        },
+        "empty": {
+            "title": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଜିନିଷ ନାହିଁ",
+            "description": "କ୍ୟାଲକୁଲେଟର ବ୍ୟବହାର କରିବା ପାଇଁ ଆପଣଙ୍କ ପ୍ରଥମ ଉତ୍ପାଦ ଯୋଡନ୍ତୁ।"
+        }
+    },
+    "categories": {
+        "groceries": "ରୋଷେଇ ସାମଗ୍ରୀ",
+        "vegetables": "ପରିବା",
+        "fruits": "ଫଳ",
+        "dairy": "ଦୁଗ୍ଧଜାତ",
+        "meat": "ମାଂସ",
+        "spices": "ମସଲା",
+        "beverages": "ପାନୀୟ",
+        "other": "ଅନ୍ୟାନ୍ୟ"
+    },
+    "settings": {
+        "language": "ଭାଷା",
+        "theme": "ଥିମ୍",
+        "darkMode": "ଡାର୍କ ମୋଡ୍",
+        "lightMode": "ଲାଇଟ ମୋଡ୍"
+    }
+}

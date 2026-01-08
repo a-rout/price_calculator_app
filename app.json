@@ -18,8 +18,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
-      "expo-web-browser"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -30,6 +29,9 @@
         "projectId": "7bf66417-d3cf-4136-95f2-f0304f35af98"
       }
     },
-    "owner": "arout"
+    "owner": "arout",
+    "android": {
+      "package": "com.arout.test"
+    }
   }
 }
