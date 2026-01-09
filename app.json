@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "bolt-expo-nativewind",
-    "slug": "test",
+    "name": "Calculator",
+    "slug": "pricecalculator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -31,7 +31,7 @@
     },
     "owner": "arout",
     "android": {
-      "package": "com.arout.test"
+      "package": "com.arout.pricecalculator"
     }
   }
 }

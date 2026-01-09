@@ -40,24 +40,31 @@ export default function TabLayout() {
           backgroundColor: Platform.OS === 'ios'
             ? 'transparent'
             : theme.colors.surface,
-          borderTopWidth: 0,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-          paddingTop: 12,
-          height: Platform.OS === 'ios' ? 88 : 68,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.borderLight,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+          paddingTop: 8,
+          height: Platform.OS === 'ios' ? 75 : 65,
           position: 'absolute',
-          elevation: 0,
+          elevation: 4,
           shadowColor: theme.colors.shadow,
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -1 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 0,
+          marginBottom: Platform.OS === 'ios' ? 0 : 8,
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: 0,
+          marginBottom: 2,
+        },
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
         },
       }}
     >
@@ -67,15 +74,15 @@ export default function TabLayout() {
           title: t('tabs.calculator'),
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              padding: 8,
-              borderRadius: 12,
+              padding: 6,
+              borderRadius: 10,
               backgroundColor: focused
                 ? theme.isDark
                   ? 'rgba(129, 140, 248, 0.2)'
-                  : 'rgba(99, 102, 241, 0.1)'
+                  : 'rgba(99, 102, 241, 0.12)'
                 : 'transparent',
             }}>
-              <Calculator size={22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Calculator size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
             </View>
           ),
         }}
@@ -86,15 +93,15 @@ export default function TabLayout() {
           title: t('tabs.items'),
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              padding: 8,
-              borderRadius: 12,
+              padding: 6,
+              borderRadius: 10,
               backgroundColor: focused
                 ? theme.isDark
                   ? 'rgba(129, 140, 248, 0.2)'
-                  : 'rgba(99, 102, 241, 0.1)'
+                  : 'rgba(99, 102, 241, 0.12)'
                 : 'transparent',
             }}>
-              <Package size={22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Package size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
             </View>
           ),
         }}

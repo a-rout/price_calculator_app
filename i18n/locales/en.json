@@ -52,7 +52,13 @@
         "empty": {
             "title": "No Items Available",
             "description": "Add your products in the Items tab to start calculating prices."
-        }
+        },
+        "quickCalc": {
+            "on": "Quick Calc ON",
+            "off": "Quick Calc",
+            "pricePerKg": "PRICE PER KG"
+        },
+        "editPrice": "Edit Price"
     },
     "items": {
         "title": "Manage Items",

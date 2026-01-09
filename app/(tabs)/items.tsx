@@ -15,7 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   Plus,
-  CreditCard as Edit3,
+  Pencil,
   Trash2,
   IndianRupee,
   Star,
@@ -355,20 +355,12 @@ export default function ItemsTab() {
               style={styles.header}
             >
               <View style={styles.headerTop}>
-                <View>
-                  <View style={styles.titleRow}>
-                    <Package size={24} color={theme.colors.primary} />
-                    <Text style={styles.title}>{t('items.title')}</Text>
-                  </View>
-                  <Text style={styles.subtitle}>{t('items.subtitle')}</Text>
-                </View>
+                <Text style={styles.title}>{t('items.title')}</Text>
                 <View style={styles.headerActions}>
                   <LanguageSwitcher compact />
                   <ThemeToggle />
                 </View>
               </View>
-
-
             </Animated.View>
 
             {/* Add/Edit Item Form */}
@@ -555,7 +547,7 @@ export default function ItemsTab() {
                                 style={styles.actionIconButton}
                                 onPress={() => startEdit(item)}
                               >
-                                <Edit3 size={18} color={theme.colors.primary} />
+                                <Pencil size={18} color={theme.colors.primary} />
                               </TouchableOpacity>
 
                               <TouchableOpacity
@@ -619,14 +611,14 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingTop: 100,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    paddingBottom: 8,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   titleRow: {
     flexDirection: 'row',
@@ -635,7 +627,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '800',
     color: theme.colors.text,
   },
@@ -647,7 +639,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
 
   card: {
@@ -807,6 +799,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.surfaceVariant,
   },
   bottomPadding: {
-    height: 100,
+    height: 85,
   },
 });

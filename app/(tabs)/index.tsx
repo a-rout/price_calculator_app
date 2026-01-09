@@ -14,7 +14,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import {
   Calculator,
   ArrowRightLeft,
-  Trash2,
   Search,
   X,
   Star,
@@ -24,6 +23,9 @@ import {
   ChevronUp,
   Coins,
   Scale,
+  Zap,
+  Edit2,
+  Check,
 } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Animated, {
@@ -39,13 +41,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import {
   getItems,
-  saveCalculation,
-  getCalculations,
-  clearCalculations as clearCalcStorage,
   getRecentItemsWithData,
   addRecentItem,
+  updateItem,
   type Item,
-  type Calculation,
 } from '@/utils/storage';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -75,11 +74,18 @@ export default function CalculatorTab() {
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
   const [result, setResult] = useState<number | null>(null);
-  const [calculations, setCalculations] = useState<Calculation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const [isItemSelectionExpanded, setIsItemSelectionExpanded] = useState(false);
+
+  // Quick Calc Mode
+  const [isQuickCalc, setIsQuickCalc] = useState(false);
+  const [quickCalcPrice, setQuickCalcPrice] = useState('');
+
+  // Quick Price Edit
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [tempPrice, setTempPrice] = useState('');
 
   // Refs
   const inputRef = React.useRef<TextInput>(null);
@@ -91,15 +97,13 @@ export default function CalculatorTab() {
 
   const loadData = async () => {
     try {
-      const [loadedItems, loadedCalcs, loadedRecent] = await Promise.all([
+      const [loadedItems, loadedRecent] = await Promise.all([
         getItems(),
-        getCalculations(),
         getRecentItemsWithData(),
       ]);
 
       setItems(loadedItems);
       setFilteredItems(loadedItems);
-      setCalculations(loadedCalcs);
       setRecentItems(loadedRecent);
 
       // Update selected item if it exists
@@ -184,6 +188,27 @@ export default function CalculatorTab() {
 
   // Auto-Calculation Effect
   useEffect(() => {
+    // Quick calc mode
+    if (isQuickCalc) {
+      const price = parseFloat(quickCalcPrice);
+      const input = parseFloat(inputValue);
+
+      if (isNaN(price) || price <= 0 || isNaN(input) || input <= 0) {
+        setResult(null);
+        return;
+      }
+
+      let calculatedResult: number;
+      if (mode === 'price') {
+        calculatedResult = input * price;
+      } else {
+        calculatedResult = input / price;
+      }
+      setResult(calculatedResult);
+      return;
+    }
+
+    // Normal item-based mode
     if (!selectedItem || !inputValue.trim()) {
       setResult(null);
       return;
@@ -203,11 +228,7 @@ export default function CalculatorTab() {
     }
 
     setResult(calculatedResult);
-
-    // Optional: Save only on significant changes or separate action to avoid spamming storage
-    // For now, we'll skip auto-saving every keystroke to persistent storage 
-    // to prevent performance issues. We could add a "Save" button or debounce this.
-  }, [inputValue, selectedItem, mode]);
+  }, [inputValue, selectedItem, mode, isQuickCalc, quickCalcPrice]);
 
   // Smart Focus Effect
   useEffect(() => {
@@ -219,31 +240,6 @@ export default function CalculatorTab() {
     }
   }, [selectedItem, isItemSelectionExpanded]);
 
-  // Manual save for history
-  const saveCurrentCalculation = async () => {
-    if (result !== null && selectedItem && inputValue) {
-      impact('medium');
-      await saveCalculation({
-        itemId: selectedItem.id,
-        itemName: selectedItem.name,
-        mode,
-        input: parseFloat(inputValue),
-        result,
-        perKgPrice: selectedItem.pricePerKg,
-      });
-      await addRecentItem(selectedItem.id);
-      const updatedCalcs = await getCalculations();
-      setCalculations(updatedCalcs);
-      notification('success');
-    }
-  };
-
-  const handleClearCalculations = async () => {
-    impact('heavy');
-    await clearCalcStorage();
-    setCalculations([]);
-  };
-
   const switchMode = () => {
     selection();
     setMode(mode === 'price' ? 'weight' : 'price');
@@ -252,15 +248,16 @@ export default function CalculatorTab() {
     setResult(null);
   };
 
+  const toggleQuickCalc = () => {
+    selection();
+    setIsQuickCalc(!isQuickCalc);
+    setInputValue('');
+    setQuickCalcPrice('');
+    setResult(null);
+  };
+
   const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
   const formatWeight = (weight: number) => `${weight.toFixed(3)} kg`;
-
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   const errorAnimatedStyle = useAnimatedStyle(() => ({
     opacity: errorOpacity.value,
@@ -370,7 +367,7 @@ export default function CalculatorTab() {
                   onPress={() => { if (mode !== 'price') switchMode(); }}
                   activeOpacity={0.7}
                 >
-                  <Coins size={18} color={mode === 'price' ? '#FFF' : theme.colors.textMuted} />
+                  <Coins size={16} color={mode === 'price' ? '#FFF' : theme.colors.textMuted} />
                   <Text style={[
                     styles.modeToggleText,
                     mode === 'price' && styles.modeToggleTextActive
@@ -386,7 +383,7 @@ export default function CalculatorTab() {
                   onPress={() => { if (mode !== 'weight') switchMode(); }}
                   activeOpacity={0.7}
                 >
-                  <Scale size={18} color={mode === 'weight' ? '#FFF' : theme.colors.textMuted} />
+                  <Scale size={16} color={mode === 'weight' ? '#FFF' : theme.colors.textMuted} />
                   <Text style={[
                     styles.modeToggleText,
                     mode === 'weight' && styles.modeToggleTextActive
@@ -394,21 +391,103 @@ export default function CalculatorTab() {
                 </TouchableOpacity>
               </View>
 
-              {/* Item Selector */}
+              {/* Quick Calc Toggle */}
               <TouchableOpacity
-                style={styles.itemSelectorRow}
-                onPress={() => setIsItemSelectionExpanded(true)}
+                style={[styles.quickCalcToggle, isQuickCalc && styles.quickCalcToggleActive]}
+                onPress={toggleQuickCalc}
+                activeOpacity={0.7}
               >
-                <Text style={styles.dashboardLabel}>{t('calculator.item')}</Text>
-                {selectedItem ? (
-                  <View>
-                    <Text style={styles.dashboardItemName} numberOfLines={1}>{selectedItem.name}</Text>
-                    <Text style={styles.dashboardItemPrice}>{formatCurrency(selectedItem.pricePerKg)}/{t('calculator.input.kg')}</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.dashboardPlaceholder}>{t('calculator.tapToSelect')}</Text>
-                )}
+                <Zap size={16} color={isQuickCalc ? '#FFF' : theme.colors.primary} />
+                <Text style={[styles.quickCalcToggleText, isQuickCalc && styles.quickCalcToggleTextActive]}>
+                  {isQuickCalc ? t('calculator.quickCalc.on') : t('calculator.quickCalc.off')}
+                </Text>
               </TouchableOpacity>
+
+              {/* Item Selector OR Quick Calc Price Input */}
+              {isQuickCalc ? (
+                <View style={styles.quickCalcInputRow}>
+                  <Text style={styles.dashboardLabel}>{t('calculator.quickCalc.pricePerKg')}</Text>
+                  <View style={styles.quickCalcPriceInputContainer}>
+                    <Text style={styles.quickCalcCurrencySymbol}>₹</Text>
+                    <TextInput
+                      style={styles.quickCalcPriceInput}
+                      value={quickCalcPrice}
+                      onChangeText={setQuickCalcPrice}
+                      placeholder="0.00"
+                      placeholderTextColor={theme.colors.textMuted + '60'}
+                      keyboardType="decimal-pad"
+                      returnKeyType="next"
+                    />
+                    <Text style={styles.quickCalcPriceUnit}>/kg</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.itemSelectorRow}>
+                  <View style={styles.itemSelectorHeader}>
+                    <Text style={styles.dashboardLabel}>{t('calculator.item')}</Text>
+                    {selectedItem && !isEditingPrice && (
+                      <TouchableOpacity
+                        style={styles.editPriceButton}
+                        onPress={() => {
+                          selection();
+                          setTempPrice(selectedItem.pricePerKg.toString());
+                          setIsEditingPrice(true);
+                        }}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Edit2 size={22} color={theme.colors.primary} />
+                      </TouchableOpacity>
+                    )}
+                    {isEditingPrice && (
+                      <TouchableOpacity
+                        style={styles.confirmPriceButton}
+                        onPress={async () => {
+                          const newPrice = parseFloat(tempPrice);
+                          if (!isNaN(newPrice) && newPrice > 0 && selectedItem) {
+                            await updateItem(selectedItem.id, { pricePerKg: newPrice });
+                            setSelectedItem({ ...selectedItem, pricePerKg: newPrice });
+                            notification('success');
+                          }
+                          setIsEditingPrice(false);
+                        }}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Check size={24} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!isEditingPrice) setIsItemSelectionExpanded(true);
+                    }}
+                    activeOpacity={isEditingPrice ? 1 : 0.7}
+                  >
+                    {selectedItem ? (
+                      <View>
+                        <Text style={styles.dashboardItemName} numberOfLines={1}>{selectedItem.name}</Text>
+                        {isEditingPrice ? (
+                          <View style={styles.editPriceInputRow}>
+                            <Text style={styles.editPriceCurrency}>₹</Text>
+                            <TextInput
+                              style={styles.editPriceInput}
+                              value={tempPrice}
+                              onChangeText={setTempPrice}
+                              keyboardType="decimal-pad"
+                              autoFocus
+                              selectTextOnFocus
+                            />
+                            <Text style={styles.editPriceUnit}>/{t('calculator.input.kg')}</Text>
+                          </View>
+                        ) : (
+                          <Text style={styles.dashboardItemPrice}>{formatCurrency(selectedItem.pricePerKg)}/{t('calculator.input.kg')}</Text>
+                        )}
+                      </View>
+                    ) : (
+                      <Text style={styles.dashboardPlaceholder}>{t('calculator.tapToSelect')}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
 
               {/* Body: Massive Input */}
               <View style={styles.dashboardBody}>
@@ -439,16 +518,13 @@ export default function CalculatorTab() {
                   {mode === 'price' ? t('calculator.result.totalCost') : t('calculator.result.totalQuantity')}
                 </Text>
                 {result !== null ? (
-                  <Animated.View style={styles.resultRow} entering={FadeIn}>
+                  <Animated.View entering={FadeIn}>
                     <Text style={[
                       styles.dashboardResultValue,
                       mode === 'price' ? styles.textPrice : styles.textWeight
                     ]}>
                       {mode === 'price' ? formatCurrency(result) : formatWeight(result)}
                     </Text>
-                    <TouchableOpacity onPress={saveCurrentCalculation} style={styles.saveButton}>
-                      <Text style={styles.saveButtonText}>{t('calculator.actions.saveCalculation')}</Text>
-                    </TouchableOpacity>
                   </Animated.View>
                 ) : (
                   <Text style={styles.dashboardResultPlaceholder}>-</Text>
@@ -577,7 +653,7 @@ export default function CalculatorTab() {
 
           {/* 6. Recent Items */}
           {!isItemSelectionExpanded && recentItems.length > 0 && (
-            <Animated.View entering={FadeInDown.duration(500).delay(600)} layout={Layout.springify()}>
+            <Animated.View entering={FadeInDown.duration(300)} layout={Layout.springify()}>
               <GlassCard style={styles.card}>
                 <View style={styles.sectionHeader}>
                   <Clock size={18} color={theme.colors.textMuted} />
@@ -609,35 +685,6 @@ export default function CalculatorTab() {
             </Animated.View>
           )}
 
-          {/* 7. Calculation History */}
-          {calculations.length > 0 && (
-            <Animated.View entering={FadeInUp.duration(500)} layout={Layout.springify()}>
-              <GlassCard style={styles.card}>
-                <View style={styles.historyHeader}>
-                  <Text style={styles.cardTitle}>{t('calculator.recentCalculations')}</Text>
-                  <TouchableOpacity onPress={handleClearCalculations}>
-                    <Trash2 size={20} color={theme.colors.error} />
-                  </TouchableOpacity>
-                </View>
-                {calculations.slice(0, 10).map((calc) => (
-                  <View key={calc.id} style={styles.historyItem}>
-                    <View style={styles.historyItemHeader}>
-                      <Text style={styles.historyItemName}>{calc.itemName}</Text>
-                      <Text style={styles.historyItemTime}>
-                        {formatTime(calc.timestamp)}
-                      </Text>
-                    </View>
-                    <Text style={styles.historyItemDetails}>
-                      {calc.mode === 'price'
-                        ? `${formatWeight(calc.input)} → ${formatCurrency(calc.result)}`
-                        : `${formatCurrency(calc.input)} → ${formatWeight(calc.result)}`
-                      }
-                    </Text>
-                  </View>
-                ))}
-              </GlassCard>
-            </Animated.View>
-          )}
 
           <View style={styles.bottomPadding} />
         </ScrollView>
@@ -661,14 +708,14 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingTop: 100,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    paddingBottom: 8,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   titleRow: {
     flexDirection: 'row',
@@ -679,10 +726,10 @@ const createStyles = (theme: any) => StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '800',
     color: theme.colors.text,
   },
@@ -692,8 +739,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginLeft: 32,
   },
   card: {
-    marginHorizontal: 20,
-    marginBottom: 16,
+    marginHorizontal: 12,
+    marginBottom: 10,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1016,7 +1063,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     lineHeight: 24,
   },
   bottomPadding: {
-    height: 100,
+    height: 85,
   },
   // New Styles
   topRow: {
@@ -1177,31 +1224,31 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   // Favorites Outside
   favoritesOutsideContainer: {
-    marginHorizontal: 20,
-    marginBottom: 16,
+    marginHorizontal: 12,
+    marginBottom: 8,
   },
   sectionTitleCompact: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: theme.colors.textMuted,
-    marginBottom: 8,
+    marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   // Dashboard Styles
   dashboardCard: {
-    marginHorizontal: 20,
-    marginBottom: 24,
-    borderRadius: 32,
+    marginHorizontal: 12,
+    marginBottom: 10,
+    borderRadius: 20,
     backgroundColor: theme.colors.surface,
     shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 4,
     borderWidth: 1,
     borderColor: theme.colors.borderLight,
-    padding: 24,
+    padding: 14,
   },
   dashboardHeader: {
     flexDirection: 'row',
@@ -1213,20 +1260,20 @@ const createStyles = (theme: any) => StyleSheet.create({
   modeToggleRow: {
     flexDirection: 'row',
     backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 20,
-    gap: 4,
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 10,
+    gap: 3,
   },
   modeToggleButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 9,
+    gap: 5,
   },
   modeToggleButtonActive: {
     shadowColor: "#000",
@@ -1242,7 +1289,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: '#6366F1',
   },
   modeToggleText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textMuted,
   },
@@ -1251,7 +1298,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
   },
   itemSelectorRow: {
-    marginBottom: 16,
+    marginBottom: 6,
   },
   dashboardItemSelector: {
     flex: 1,
@@ -1264,10 +1311,10 @@ const createStyles = (theme: any) => StyleSheet.create({
     letterSpacing: 1,
   },
   dashboardItemName: {
-    fontSize: 26,
-    fontWeight: '800', // Ultrabold
+    fontSize: 28,
+    fontWeight: '800',
     color: theme.colors.text,
-    marginBottom: 4,
+    marginBottom: 2,
     letterSpacing: -0.5,
   },
   dashboardItemPrice: {
@@ -1311,34 +1358,34 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: 24,
-    marginTop: 16,
-    paddingVertical: 12,
+    marginBottom: 6,
+    marginTop: 0,
+    paddingVertical: 0,
   },
   dashboardInput: {
-    fontSize: 64, // Even Bigger
+    fontSize: 44,
     fontWeight: '800',
     color: theme.colors.text,
-    minWidth: 120,
+    minWidth: 80,
     textAlign: 'center',
-    letterSpacing: -3,
+    letterSpacing: -2,
     includeFontPadding: false,
   },
   dashboardInputUnit: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '600',
     color: theme.colors.textMuted,
-    marginLeft: 8,
-    marginBottom: 8, // Align baseline
+    marginLeft: 4,
+    marginBottom: 4,
   },
   dashboardFooter: {
     backgroundColor: theme.colors.surfaceVariant,
-    marginHorizontal: -24,
-    marginBottom: -24,
-    padding: 20,
+    marginHorizontal: -14,
+    marginBottom: -14,
+    padding: 12,
     alignItems: 'center',
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   dashboardResultLabel: {
     fontSize: 12,
@@ -1349,31 +1396,31 @@ const createStyles = (theme: any) => StyleSheet.create({
     textTransform: 'uppercase',
   },
   dashboardResultValue: {
-    fontSize: 48,
+    fontSize: 34,
     fontWeight: '800',
     textAlign: 'center',
     letterSpacing: -1,
   },
   dashboardResultPlaceholder: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '800',
     color: theme.colors.textMuted,
   },
   resultRow: {
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   saveButton: {
-    marginTop: 8,
+    marginTop: 6,
     backgroundColor: theme.colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 14,
   },
   saveButtonText: {
     color: '#FFF',
     fontWeight: '700',
-    fontSize: 11,
+    fontSize: 14,
     letterSpacing: 0.5,
   },
   textPrice: {
@@ -1390,37 +1437,139 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   // Recycled
   compactFavoritesList: {
-    paddingRight: 20,
-    gap: 12,
+    paddingRight: 16,
+    gap: 10,
   },
   compactFavoriteItem: {
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderRadius: 20,
+    backgroundColor: theme.colors.surfaceVariant,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    minWidth: 100,
+    borderColor: theme.colors.border,
+    minWidth: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
   compactFavoriteItemSelected: {
+    backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primary + '10', // 10% opacity primary
-    borderWidth: 2,
   },
   compactFavoriteName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: theme.colors.text,
   },
   compactFavoriteNameSelected: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  // Quick Calc Styles
+  quickCalcToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary,
+    backgroundColor: 'transparent',
+    marginBottom: 10,
+    gap: 6,
+    alignSelf: 'center',
+  },
+  quickCalcToggleActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  quickCalcToggleText: {
+    fontSize: 12,
+    fontWeight: '700',
     color: theme.colors.primary,
-    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  quickCalcToggleTextActive: {
+    color: '#FFF',
+  },
+  quickCalcInputRow: {
+    marginBottom: 6,
+  },
+  quickCalcPriceInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '40',
+  },
+  quickCalcCurrencySymbol: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: theme.colors.primary,
+    marginRight: 4,
+  },
+  quickCalcPriceInput: {
+    flex: 1,
+    fontSize: 22,
+    fontWeight: '700',
+    color: theme.colors.text,
+    paddingVertical: 4,
+  },
+  quickCalcPriceUnit: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textMuted,
+    marginLeft: 4,
+  },
+  // Quick Price Edit Styles
+  itemSelectorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 4,
+  },
+  editPriceButton: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary + '25',
+  },
+  confirmPriceButton: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: '#10B981',
+  },
+  editPriceInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '50',
+  },
+  editPriceCurrency: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.primary,
+    marginRight: 2,
+  },
+  editPriceInput: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.text,
+    minWidth: 60,
+    paddingVertical: 2,
+  },
+  editPriceUnit: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textMuted,
+    marginLeft: 4,
   },
 });
